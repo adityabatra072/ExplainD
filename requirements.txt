@@ -2,3 +2,4 @@ streamlit
 requests
 gTTS
 manim
+python-dotenv
