@@ -85,8 +85,7 @@ class VectorIntro(Scene):
 """
 
 def _extract_json_from_response(text: str) -> dict:
-    """A helper function to find and parse a JSON object from a string."""
-    # This regex is designed to find a JSON object even if it's embedded in other text
+    # regex to find a JSON object even if it's embedded in other text
     json_match = re.search(r'\{.*\}', text, re.DOTALL)
     if json_match:
         try:
@@ -135,7 +134,7 @@ if __name__ == '__main__':
     test_topic = "Pythagorean Theorem"
     test_audience = "Middle Schooler"
 
-    # --- Step 1: Test Storyboard Creation ---
+    # --- Test Storyboard Creation ---
     print(f"\n[1/3] Generating storyboard for '{test_topic}'...")
     storyboard = create_storyboard(test_topic, test_audience)
     
@@ -145,7 +144,7 @@ if __name__ == '__main__':
         
         first_frame = storyboard["frames"][0]
         
-        # --- Step 2: Test Scene Detail Generation ---
+        # ---Test Scene Detail Generation ---
         print(f"\n[2/3] Generating scene details for first frame...")
         scene_details = generate_scene_details(first_frame['description'])
         
@@ -153,7 +152,7 @@ if __name__ == '__main__':
             print("Scene details generated successfully:")
             print(json.dumps(scene_details, indent=2))
             
-            # --- Step 3: Test Manim Code Generation ---
+            # ---Test Manim Code Generation ---
             print(f"\n[3/3] Generating Manim code...")
             manim_code = generate_manim_code(scene_details['animation-description'], 1)
             
@@ -169,4 +168,3 @@ if __name__ == '__main__':
             print("Scene detail generation failed.")
     else:
         print("Storyboard generation failed.")
-
