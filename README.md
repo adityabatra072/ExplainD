@@ -63,7 +63,7 @@ Follow these steps to run the project on your local machine.
 ### **2. Clone the Repository**
 
 ```bash
-git clone [https://github.com/adityabatra072/ExplainD](https://github.com/adityabatra072/ExplainD)
+git clone https://github.com/adityabatra072/ExplainD
 cd ExplainD
 ```
 
