@@ -1,15 +1,14 @@
 import json
 import re
-from local_llm_api import query_local_model
+from .local_llm_api import query_local_model
 
 # --- Model Configuration ---
-# Define which local models to use for each task
+
 EXPLANATION_MODEL = "mistral"
 CODE_MODEL = "mistral"
 
 
 # --- PROMPT TEMPLATES ---
-# These templates guide the AI to produce structured, high-quality output.
 
 STORYBOARD_PROMPT_TEMPLATE = """
 You are an expert educational content creator. Your task is to generate a 3-frame storyboard to explain a topic to a specific audience. Each frame must be a distinct, visualizable concept.
