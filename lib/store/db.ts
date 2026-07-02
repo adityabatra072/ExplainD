@@ -36,7 +36,7 @@ function migrate(db: Database.Database) {
     );
 
     CREATE TABLE IF NOT EXISTS scenes (
-      id TEXT PRIMARY KEY,
+      id TEXT NOT NULL,                 -- spec id, unique within a lesson only
       lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
       order_key REAL NOT NULL,          -- fractional ordering enables O(1) insertion
       spec_json TEXT NOT NULL,
@@ -47,7 +47,8 @@ function migrate(db: Database.Database) {
       inserted INTEGER NOT NULL DEFAULT 0,  -- 1 = added by the tutor agent mid-lesson
       summary TEXT,                     -- 1-2 sentence cache for agent context
       repair_count INTEGER NOT NULL DEFAULT 0,
-      created_at INTEGER NOT NULL
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (lesson_id, id)
     );
     CREATE INDEX IF NOT EXISTS idx_scenes_lesson ON scenes(lesson_id, order_key);
 

@@ -17,6 +17,7 @@
     "@ai-sdk/google": "^4.0.6",
     "@ai-sdk/openai": "^4.0.5",
     "@ai-sdk/openai-compatible": "^3.0.3",
+    "@aws-sdk/credential-providers": "^3.1078.0",
     "@dagrejs/dagre": "^3.0.0",
     "@remotion/bundler": "^4.0.484",
     "@remotion/cli": "^4.0.484",

@@ -182,17 +182,24 @@ export function addScene(args: {
   };
 }
 
-export function getSceneById(sceneId: string): SceneRow | null {
-  const row = getDb().prepare("SELECT * FROM scenes WHERE id = ?").get(sceneId) as
-    | Record<string, unknown>
-    | undefined;
+export function getSceneById(
+  lessonId: string,
+  sceneId: string
+): SceneRow | null {
+  const row = getDb()
+    .prepare("SELECT * FROM scenes WHERE lesson_id = ? AND id = ?")
+    .get(lessonId, sceneId) as Record<string, unknown> | undefined;
   return row ? rowToScene(row) : null;
 }
 
-export function setSceneSummary(sceneId: string, summary: string): void {
+export function setSceneSummary(
+  lessonId: string,
+  sceneId: string,
+  summary: string
+): void {
   getDb()
-    .prepare("UPDATE scenes SET summary = ? WHERE id = ?")
-    .run(summary, sceneId);
+    .prepare("UPDATE scenes SET summary = ? WHERE lesson_id = ? AND id = ?")
+    .run(summary, lessonId, sceneId);
 }
 
 /** orderKey strictly between two neighbors (or at the end). */
