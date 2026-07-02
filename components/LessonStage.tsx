@@ -33,6 +33,7 @@ export function LessonStage({ lessonId }: { lessonId: string }) {
   const [statusLine, setStatusLine] = useState("Loading…");
   const [error, setError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const startedPlayback = useRef(false);
 
   const map = useMemo(() => buildFrameMap(scenes), [scenes]);
@@ -170,6 +171,35 @@ export function LessonStage({ lessonId }: { lessonId: string }) {
             <span className="text-xs text-accent/80 font-mono animate-pulse">
               {statusLine}
             </span>
+          )}
+          {lesson?.status === "ready" && (
+            <button
+              onClick={async () => {
+                if (exporting) return;
+                setExporting(true);
+                try {
+                  const res = await fetch(`/api/lesson/${lessonId}/export`, {
+                    method: "POST",
+                  });
+                  if (!res.ok) throw new Error(await res.text());
+                  const blob = await res.blob();
+                  const a = document.createElement("a");
+                  a.href = URL.createObjectURL(blob);
+                  a.download = `${lesson?.title || "lesson"}.mp4`;
+                  a.click();
+                  URL.revokeObjectURL(a.href);
+                } catch {
+                  // error shown implicitly; export is best-effort
+                } finally {
+                  setExporting(false);
+                }
+              }}
+              disabled={exporting}
+              className="text-sm px-3 py-1 border border-hairline-strong text-ink-dim hover:text-ink disabled:opacity-50 transition-colors"
+              title="Render this lesson to an MP4 file (takes a few minutes)"
+            >
+              {exporting ? "rendering…" : "Export MP4"}
+            </button>
           )}
           <button
             onClick={() => setChatOpen((o) => !o)}

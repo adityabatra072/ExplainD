@@ -4,6 +4,9 @@ import type { TimedScene } from "@/lib/spec/schema";
 import { buildFrameMap } from "@/lib/timeline";
 import { SceneRenderer } from "./SceneRenderer";
 import { stage } from "./theme";
+import { loadStageFonts } from "./fonts";
+
+loadStageFonts();
 
 export type LessonCompositionProps = {
   scenes: TimedScene[];
