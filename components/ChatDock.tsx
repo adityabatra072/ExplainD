@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { TimedScene } from "@/lib/spec/schema";
+import { WebSpeechTransport } from "@/lib/voice/types";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -34,8 +35,12 @@ export function ChatDock({
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [listening, setListening] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const loadedRef = useRef(false);
+  const replyAudioRef = useRef<HTMLAudioElement | null>(null);
+  const voice = useMemo(() => new WebSpeechTransport(), []);
 
   useEffect(() => {
     if (!open || loadedRef.current) return;
@@ -50,15 +55,38 @@ export function ChatDock({
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages]);
 
-  const send = async () => {
-    const q = input.trim();
+  /** In voice mode, speak the tutor's reply aloud (unless scenes were added — the lesson takes over). */
+  const speakReply = async (text: string, scenesWereInserted: boolean) => {
+    if (!voiceMode || scenesWereInserted || !text) return;
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.replace(/[*_#`]/g, "").slice(0, 1200) }),
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      replyAudioRef.current?.pause();
+      const audio = new Audio(URL.createObjectURL(blob));
+      replyAudioRef.current = audio;
+      await audio.play();
+    } catch {
+      // silent failure: text is already on screen
+    }
+  };
+
+  const send = async (spoken?: string) => {
+    const q = (spoken ?? input).trim();
     if (!q || busy) return;
     setInput("");
     setBusy(true);
     onPause();
+    replyAudioRef.current?.pause();
     const playhead = getPlayhead();
     setMessages((m) => [...m, { role: "user", content: q }, { role: "assistant", content: "" }]);
 
+    let fullReply = "";
+    let scenesWereInserted = false;
     try {
       const res = await fetch(`/api/lesson/${lessonId}/chat`, {
         method: "POST",
@@ -83,6 +111,7 @@ export function ChatDock({
           const ev = JSON.parse(line);
           switch (ev.type) {
             case "text-delta":
+              fullReply += ev.text;
               setMessages((m) => {
                 const copy = [...m];
                 copy[copy.length - 1] = {
@@ -93,6 +122,7 @@ export function ChatDock({
               });
               break;
             case "scenes-inserted":
+              scenesWereInserted = true;
               onScenesInserted(ev.afterSceneId, ev.scenes);
               break;
             case "seek":
@@ -124,8 +154,42 @@ export function ChatDock({
       });
     } finally {
       setBusy(false);
+      speakReply(fullReply, scenesWereInserted);
     }
   };
+
+  // Voice mode: hold Space (outside the textarea) to talk.
+  useEffect(() => {
+    if (!voiceMode || !voice.available) return;
+    let holding = false;
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== "Space" || holding) return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "TEXTAREA" || target.tagName === "INPUT") return;
+      e.preventDefault();
+      holding = true;
+      setListening(true);
+      onPause();
+      replyAudioRef.current?.pause();
+      voice.startListening((text) => setInput(text));
+    };
+    const up = async (e: KeyboardEvent) => {
+      if (e.code !== "Space" || !holding) return;
+      holding = false;
+      setListening(false);
+      const transcript = await voice.stopListening();
+      setInput("");
+      if (transcript) send(transcript);
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      voice.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceMode, voice, busy]);
 
   return (
     <aside
@@ -133,11 +197,40 @@ export function ChatDock({
         open ? "translate-x-0" : "translate-x-full"
       }`}
     >
-      <div className="px-4 py-3 border-b border-hairline">
-        <h2 className="font-serif text-ink-dim">Tutor</h2>
-        <p className="text-[11px] text-ink-faint mt-0.5">
-          Ask about anything on screen — I know where you are in the lesson.
-        </p>
+      <div className="px-4 py-3 border-b border-hairline flex items-start justify-between">
+        <div>
+          <h2 className="font-serif text-ink-dim">Tutor</h2>
+          <p className="text-[11px] text-ink-faint mt-0.5">
+            {voiceMode
+              ? listening
+                ? "Listening…"
+                : "Hold Space to talk"
+              : "Ask about anything on screen — I know where you are in the lesson."}
+          </p>
+        </div>
+        {voice.available && (
+          <button
+            onClick={(e) => {
+              // Blur so a subsequent Space (PTT) doesn't re-click this button.
+              e.currentTarget.blur();
+              setVoiceMode((v) => !v);
+            }}
+            title={
+              voiceMode
+                ? "voice mode on — replies are spoken"
+                : "enable voice mode (push-to-talk)"
+            }
+            className={`shrink-0 px-2.5 py-1 border text-xs transition-colors ${
+              voiceMode
+                ? listening
+                  ? "border-accent text-accent animate-pulse"
+                  : "border-accent/60 text-accent"
+                : "border-hairline-strong text-ink-dim hover:text-ink"
+            }`}
+          >
+            {listening ? "● rec" : "🎙 voice"}
+          </button>
+        )}
       </div>
 
       <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
@@ -181,7 +274,7 @@ export function ChatDock({
             pauses playback · answers can add scenes
           </span>
           <button
-            onClick={send}
+            onClick={() => send()}
             disabled={busy || !input.trim()}
             className="text-xs px-3 py-1 border border-hairline-strong text-ink-dim hover:text-ink hover:border-accent/60 disabled:opacity-40 transition-colors"
           >
