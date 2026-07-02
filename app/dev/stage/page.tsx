@@ -1,16 +1,19 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Player } from "@remotion/player";
 import { LessonComposition } from "@/remotion/LessonComposition";
 import { derivativeLesson } from "@/lib/spec/examples";
 import { buildFrameMap, timeScene, FPS } from "@/lib/timeline";
 import { CANVAS } from "@/remotion/theme";
+import type { TimedScene } from "@/lib/spec/schema";
 
 /**
- * Dev harness: renders the hand-written example lesson (no audio yet).
- * Kept in production builds — it's a useful renderer smoke test page.
+ * Dev harness for the renderer.
+ *   /dev/stage            — silent, estimated timings
+ *   /dev/stage?audio=1    — real Edge TTS audio + word-exact beat sync
+ *   /dev/stage?frame=N    — paused at frame N (deterministic QA screenshots)
  */
 export default function StageDevPage() {
   return (
@@ -22,13 +25,30 @@ export default function StageDevPage() {
 
 function StageDevInner() {
   const params = useSearchParams();
-  // ?frame=N pauses at an exact frame — used by QA screenshots.
   const frameParam = params.get("frame");
+  const withAudio = params.get("audio") === "1";
   const initialFrame = frameParam ? parseInt(frameParam, 10) : null;
-  const scenes = useMemo(
+
+  const silentScenes = useMemo(
     () => derivativeLesson.scenes.map((s) => timeScene(s, null, [])),
     []
   );
+  const [scenes, setScenes] = useState<TimedScene[]>(silentScenes);
+  const [audioState, setAudioState] = useState<string>(
+    withAudio ? "synthesizing narration…" : ""
+  );
+
+  useEffect(() => {
+    if (!withAudio) return;
+    fetch("/api/dev/example-lesson")
+      .then((r) => r.json())
+      .then((data) => {
+        setScenes(data.scenes);
+        setAudioState("voiced (Edge TTS, word-level sync)");
+      })
+      .catch((e) => setAudioState(`TTS failed: ${e}`));
+  }, [withAudio]);
+
   const map = buildFrameMap(scenes);
 
   return (
@@ -38,6 +58,7 @@ function StageDevInner() {
       </h1>
       <div className="w-full max-w-6xl border border-hairline">
         <Player
+          key={scenes === silentScenes ? "silent" : "voiced"}
           component={LessonComposition}
           inputProps={{ scenes }}
           durationInFrames={map.totalDurationInFrames}
@@ -54,8 +75,8 @@ function StageDevInner() {
       </div>
       <p className="text-ink-faint text-sm font-mono">
         {scenes.length} scenes · {map.totalDurationInFrames} frames ·{" "}
-        {Math.round(map.totalDurationInFrames / FPS)}s (silent — word timings
-        estimated)
+        {Math.round(map.totalDurationInFrames / FPS)}s
+        {audioState ? ` · ${audioState}` : " · silent (estimated timings)"}
       </p>
     </main>
   );
