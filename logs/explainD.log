@@ -1,0 +1,27 @@
+2025-10-22 17:23:21,604 - INFO - Explain requested for topic: Arrays (audience: Undergraduate)
+2025-10-22 17:23:45,108 - INFO - Generated script and manim code, starting render.
+2025-10-22 17:24:39,063 - INFO - Video ready at output\ExplainerScene.mp4
+2025-10-22 17:52:40,618 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 17:53:02,622 - INFO - Generated script and manim code, starting render.
+2025-10-22 17:53:52,299 - INFO - Video ready at output\ExplainerScene.mp4
+2025-10-22 20:33:52,843 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 20:34:23,088 - INFO - Generated script and manim code, starting render.
+2025-10-22 20:35:08,774 - INFO - Video ready at output\ExplainerScene.mp4
+2025-10-22 20:42:48,305 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 20:43:44,005 - INFO - Generated script and manim code, starting render.
+2025-10-22 20:45:34,805 - ERROR - Video render failed; path not found or render error occurred.
+2025-10-22 20:47:53,755 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 20:49:14,838 - INFO - Generated script and manim code, starting render.
+2025-10-22 20:51:21,558 - ERROR - Video render failed; path not found or render error occurred.
+2025-10-22 20:55:33,588 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 20:56:23,862 - INFO - Generated script and manim code, starting render.
+2025-10-22 20:57:56,215 - ERROR - Video render failed; path not found or render error occurred.
+2025-10-22 21:02:34,296 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 21:03:54,280 - INFO - Generated script and manim code, starting render.
+2025-10-22 21:06:00,124 - ERROR - Video render failed; path not found or render error occurred.
+2025-10-22 21:18:14,480 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 21:19:44,058 - INFO - Generated script and manim code, starting render.
+2025-10-22 21:21:43,544 - ERROR - Video render failed; path not found or render error occurred.
+2025-10-22 21:26:47,579 - INFO - Explain requested for topic: Arrays (audience: Middle School)
+2025-10-22 21:28:04,895 - INFO - Generated script and manim code, starting render.
+2025-10-22 21:30:07,051 - ERROR - Video render failed; path not found or render error occurred.

@@ -2,6 +2,7 @@ from gtts import gTTS
 import tempfile
 import os
 
+
 def create_narration_audio(text: str) -> str | None:
     """
     Converts a string of text into an MP3 audio file using gTTS.
@@ -34,18 +35,3 @@ def create_narration_audio(text: str) -> str | None:
     except Exception as e:
         print(f"ERROR: Failed to create narration audio: {e}")
         return None
-
-# This block allows us to test the file directly
-if __name__ == '__main__':
-    print("--- Testing Narration Generator Module ---")
-    test_text = "Hello, this is a test of the narration module."
-    print(f"Generating audio for text: '{test_text}'")
-
-    audio_path = create_narration_audio(test_text)
-
-    if audio_path and os.path.exists(audio_path):
-        print(f"\nAudio file generated successfully!")
-        print(f"File saved at: {audio_path}")
-        print("You can play this file with a media player to verify.")
-    else:
-        print("\nAudio generation failed.")

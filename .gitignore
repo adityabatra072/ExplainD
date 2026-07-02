@@ -8,3 +8,5 @@ __pycache__/
 # Ignore the file with our secret API key
 .env
 
+AGENTS.md
+
